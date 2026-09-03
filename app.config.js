@@ -78,7 +78,11 @@ module.exports = {
   },
   extra: {
     apiBaseUrl: process.env.READLENS_API_BASE_URL,
-    basicAuthUsername: process.env.READLENS_BASIC_AUTH_USERNAME,
-    basicAuthPassword: process.env.READLENS_BASIC_AUTH_PASSWORD,
+    // Encoded at build time rather than in the app: React Native has no global
+    // `btoa`, which is what axios's `auth` option relies on. Base64 is not
+    // obfuscation — see the caveat at the top of this file.
+    basicAuthHeader: `Basic ${Buffer.from(
+      `${process.env.READLENS_BASIC_AUTH_USERNAME ?? ""}:${process.env.READLENS_BASIC_AUTH_PASSWORD ?? ""}`,
+    ).toString("base64")}`,
   },
 };
