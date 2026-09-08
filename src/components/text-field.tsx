@@ -10,7 +10,7 @@ import {
 import { colors, radius, spacing, typography } from "@/theme";
 
 interface TextFieldProps extends TextInputProps {
-    label: string;
+    label?: string;
     error?: string;
 }
 
@@ -18,7 +18,9 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(
     function TextField({ label, error, style, ...props }, ref) {
         return (
             <View style={styles.container}>
-                <Text style={styles.label}>{label}</Text>
+                {Boolean(label?.trim()) ? (
+                    <Text style={styles.label}>{label}</Text>
+                ) : null}
                 <TextInput
                     ref={ref}
                     accessibilityLabel={label}

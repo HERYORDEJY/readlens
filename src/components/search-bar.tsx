@@ -17,7 +17,7 @@ export function SearchBar({
     return (
         <View style={styles.searchRow}>
             <TextField
-                label="Search"
+                accessibilityLabel="Search reports"
                 value={value}
                 onChangeText={onChange}
                 placeholder="Search reports"
@@ -44,6 +44,6 @@ const styles = StyleSheet.create({
     searchSpinner: {
         position: "absolute",
         right: spacing.xl + spacing.sm,
-        bottom: spacing.xl + 2,
+        bottom: spacing.xl + spacing.sm,
     },
 });
