@@ -16,7 +16,7 @@ export default function AppLayout() {
             <Stack.Screen name="reports/[id]" options={{ title: "Report" }} />
             <Stack.Screen
                 name="reports/create"
-                options={{ title: "New report", presentation: "modal" }}
+                options={{ title: "New report" }}
             />
         </Stack>
     );
