@@ -53,6 +53,11 @@ export interface HttpClientConfig {
     basicAuthHeader: string;
     /** Generous by default: the dev server sleeps and its first response is slow. */
     timeoutMs?: number;
+    /**
+     * Test seam: lets a suite swap in a mock transport. Unset in the app, where
+     * axios picks its own adapter.
+     */
+    adapter?: AxiosRequestConfig["adapter"];
 }
 
 /** Endpoints that must never carry session headers or trigger a refresh. */
@@ -89,6 +94,7 @@ export class HttpClient {
         const base: AxiosRequestConfig = {
             baseURL: config.baseUrl,
             timeout: config.timeoutMs ?? 60_000,
+            ...(config.adapter ? { adapter: config.adapter } : {}),
             headers: {
                 Authorization: config.basicAuthHeader,
             },
@@ -99,10 +105,6 @@ export class HttpClient {
 
         this.instance.interceptors.request.use((request) => {
             if (!isUnauthenticatedPath(request.url)) {
-                // The spec asks for X-Client-Platform on *authenticated*
-                // requests only. Sending it on login/verify_otp is not
-                // required, and the backend appears to branch on it when
-                // deciding whether to set the session cookies.
                 request.headers.set("X-Client-Platform", "mobile");
                 this.applyAuthHeaders(request, this.session.getTokens());
             }

@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 
 import { reportsApi } from "./api";
+import { nextPageParam } from "./pagination";
 import type { ReportDetail, ReportListData } from "./types";
 
 export const PAGE_SIZE = 10;
@@ -25,10 +26,7 @@ export function useReportsInfinite(search: string) {
                 search: search || undefined,
             }),
         initialPageParam: 1,
-        getNextPageParam: (last: ReportListData) =>
-            last.pagination.has_next
-                ? (last.pagination.next_page ?? undefined)
-                : undefined,
+        getNextPageParam: nextPageParam,
         placeholderData: keepPreviousData,
     });
 }
