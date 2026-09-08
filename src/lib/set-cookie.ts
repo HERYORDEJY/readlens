@@ -46,3 +46,33 @@ export function unsignCookieValue(value: string): string {
   const lastDot = body.lastIndexOf(".");
   return lastDot === -1 ? body : body.slice(0, lastDot);
 }
+
+/**
+ * Pull the raw Set-Cookie header out of a response, whatever shape it takes.
+ *
+ * Axios exposes headers as an AxiosHeaders instance on some platforms and a
+ * plain object on others, and React Native's XHR layer has its own casing
+ * behaviour, so every access path is tried before giving up.
+ */
+export function extractSetCookie(headers: unknown): string | string[] | undefined {
+  if (!headers) return undefined;
+
+  // AxiosHeaders exposes a normalising getter.
+  const withGet = headers as { get?: (name: string) => unknown };
+  if (typeof withGet.get === "function") {
+    const viaGetter = withGet.get("set-cookie");
+    if (typeof viaGetter === "string" || Array.isArray(viaGetter)) {
+      return viaGetter as string | string[];
+    }
+  }
+
+  // Plain-object access, then a case-insensitive sweep as the last resort.
+  const record = headers as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (key.toLowerCase() !== "set-cookie") continue;
+    const value = record[key];
+    if (typeof value === "string" || Array.isArray(value)) return value as string | string[];
+  }
+
+  return undefined;
+}

@@ -91,7 +91,6 @@ export class HttpClient {
             timeout: config.timeoutMs ?? 60_000,
             headers: {
                 Authorization: config.basicAuthHeader,
-                "X-Client-Platform": "mobile",
             },
         };
 
@@ -100,6 +99,11 @@ export class HttpClient {
 
         this.instance.interceptors.request.use((request) => {
             if (!isUnauthenticatedPath(request.url)) {
+                // The spec asks for X-Client-Platform on *authenticated*
+                // requests only. Sending it on login/verify_otp is not
+                // required, and the backend appears to branch on it when
+                // deciding whether to set the session cookies.
+                request.headers.set("X-Client-Platform", "mobile");
                 this.applyAuthHeaders(request, this.session.getTokens());
             }
             return request;
@@ -203,6 +207,7 @@ export class HttpClient {
             ApiEnvelope<RefreshResponseData>
         >("/auth/refresh_token", undefined, {
             headers: {
+                "X-Client-Platform": "mobile",
                 "X-Refresh-Token": current.refreshToken,
                 "x-session-key": current.sessionKey,
             },

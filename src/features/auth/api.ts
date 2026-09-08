@@ -1,6 +1,6 @@
 import { httpClient } from "@/lib/api";
 import type { AuthTokens } from "@/lib/http-client";
-import { parseSetCookie, unsignCookieValue } from "@/lib/set-cookie";
+import { extractSetCookie, parseSetCookie, unsignCookieValue } from "@/lib/set-cookie";
 
 import type { LoginData, LoginRequest, User, VerifyOtpData, VerifyOtpRequest } from "./types";
 
@@ -30,7 +30,8 @@ export const authApi = {
       data: body,
     });
 
-    const cookies = parseSetCookie(response.headers["set-cookie"]);
+    const rawSetCookie = extractSetCookie(response.headers);
+    const cookies = parseSetCookie(rawSetCookie);
     const refreshToken = cookies.refresh_token && unsignCookieValue(cookies.refresh_token);
     const sessionKey = cookies.session_key && unsignCookieValue(cookies.session_key);
 
