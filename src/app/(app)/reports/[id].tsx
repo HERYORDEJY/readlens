@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
+import { useState } from "react";
 import {
     ActivityIndicator,
     Pressable,
@@ -34,6 +35,21 @@ export default function ReportDetailScreen() {
         expectFile: expectFile === "1",
     });
 
+    const [opening, setOpening] = useState(false);
+    const [openError, setOpenError] = useState<string | null>(null);
+
+    const openAttachment = async (url: string) => {
+        setOpenError(null);
+        setOpening(true);
+        try {
+            await WebBrowser.openBrowserAsync(url);
+        } catch (error) {
+            setOpenError(toErrorMessage(error));
+        } finally {
+            setOpening(false);
+        }
+    };
+
     if (isLoading) {
         return (
             <View style={styles.centered}>
@@ -53,8 +69,10 @@ export default function ReportDetailScreen() {
         );
     }
 
+    const fileUrl = report.file?.url;
     const fileType = report.file?.type?.toLowerCase() ?? "";
     const isImage = IMAGE_TYPES.includes(fileType);
+    const fileLabel = fileType.toUpperCase() || "file";
     // The Lambda that attaches an uploaded file runs asynchronously, so a missing
     // file right after creation is an expected state, not an error.
     const awaitingFile = expectFile === "1" && !report.file?.url;
@@ -87,31 +105,48 @@ export default function ReportDetailScreen() {
             </Text>
 
             <Text style={styles.sectionLabel}>Attachment</Text>
-            {report.file?.url ? (
-                isImage ? (
-                    <Image
-                        source={{ uri: report.file.url }}
-                        style={styles.image}
-                        contentFit="cover"
-                        transition={200}
-                        accessibilityLabel={`Attachment for ${report.title}`}
-                    />
-                ) : (
+            {fileUrl ? (
+                <View>
                     <Pressable
                         accessibilityRole="button"
-                        onPress={() =>
-                            void WebBrowser.openBrowserAsync(report.file!.url)
-                        }
+                        accessibilityLabel={`Open ${fileLabel} attachment`}
+                        accessibilityHint="Opens the file in a browser"
+                        onPress={() => void openAttachment(fileUrl)}
+                        disabled={opening}
                         style={({ pressed }) => [
-                            styles.fileLink,
+                            !isImage && styles.fileLink,
                             pressed && styles.fileLinkPressed,
                         ]}
                     >
-                        <Text style={styles.fileLinkText}>
-                            Open {fileType.toUpperCase() || "file"}
-                        </Text>
+                        {isImage ? (
+                            <Image
+                                source={{ uri: fileUrl }}
+                                style={styles.image}
+                                contentFit="cover"
+                                transition={200}
+                            />
+                        ) : (
+                            <Text style={styles.fileLinkText}>
+                                {opening ? "Opening…" : `Open ${fileLabel}`}
+                            </Text>
+                        )}
                     </Pressable>
-                )
+
+                    {isImage && (
+                        <Text style={styles.imageHint}>
+                            Tap to open the full-size file
+                        </Text>
+                    )}
+
+                    {!!openError && (
+                        <Text
+                            accessibilityRole="alert"
+                            style={styles.openError}
+                        >
+                            {openError}
+                        </Text>
+                    )}
+                </View>
             ) : awaitingFile ? (
                 <View style={styles.processing}>
                     <ActivityIndicator color={colors.textMuted} />
@@ -196,6 +231,16 @@ const styles = StyleSheet.create({
         backgroundColor: colors.surface,
     },
     processingText: { ...typography.body, color: colors.textMuted, flex: 1 },
+    imageHint: {
+        ...typography.caption,
+        color: colors.textMuted,
+        marginTop: spacing.sm,
+    },
+    openError: {
+        ...typography.caption,
+        color: colors.danger,
+        marginTop: spacing.sm,
+    },
     noFile: { ...typography.body, color: colors.textMuted },
     refreshing: {
         ...typography.caption,
