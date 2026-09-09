@@ -54,7 +54,7 @@ export default function VerifyOtpScreen() {
                             autoFocus
                             keyboardType="number-pad"
                             textContentType="oneTimeCode"
-                            autoComplete="one-time-code"
+                            autoComplete="off"
                             maxLength={8}
                             placeholder="123456"
                             style={styles.otpInput}

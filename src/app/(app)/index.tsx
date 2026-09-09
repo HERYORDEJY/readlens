@@ -10,6 +10,8 @@ import {
     View,
 } from "react-native";
 
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { ListSkeleton } from "@/components/list-skeleton";
 import { StateMessage } from "@/components/state-message";
 import { useLogout } from "@/features/auth/hooks";
@@ -21,9 +23,12 @@ import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { colors, spacing, typography } from "@/theme";
 import { SearchBar } from "@/components/search-bar";
 
+const FAB_CLEARANCE = 96;
+
 export default function ReportsListScreen() {
     const navigation = useNavigation();
     const logout = useLogout();
+    const insets = useSafeAreaInsets();
 
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebouncedValue(search.trim());
@@ -112,9 +117,10 @@ export default function ReportsListScreen() {
                 data={reports}
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
-                contentContainerStyle={
-                    reports.length === 0 ? styles.emptyContent : undefined
-                }
+                contentContainerStyle={[
+                    reports.length === 0 && styles.emptyContent,
+                    { paddingBottom: FAB_CLEARANCE + insets.bottom },
+                ]}
                 keyboardDismissMode="on-drag"
                 keyboardShouldPersistTaps="handled"
                 onEndReached={loadNextPage}
@@ -171,6 +177,7 @@ export default function ReportsListScreen() {
                 onPress={() => router.push("/reports/create")}
                 style={({ pressed }) => [
                     styles.fab,
+                    { bottom: spacing.xl + insets.bottom },
                     pressed && styles.fabPressed,
                 ]}
             >
@@ -190,7 +197,6 @@ const styles = StyleSheet.create({
     fab: {
         position: "absolute",
         right: spacing.lg,
-        bottom: spacing.xl,
         paddingHorizontal: spacing.xl,
         paddingVertical: spacing.md,
         borderRadius: 999,

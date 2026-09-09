@@ -1,4 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -24,7 +25,8 @@ export default function RootLayout() {
     if (status === "hydrating") return null;
 
     return (
-        <QueryClientProvider client={queryClient}>
+        <SafeAreaProvider>
+            <QueryClientProvider client={queryClient}>
             <StatusBar style="dark" />
             <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Protected guard={status === "authenticated"}>
@@ -34,6 +36,7 @@ export default function RootLayout() {
                     <Stack.Screen name="(auth)" />
                 </Stack.Protected>
             </Stack>
-        </QueryClientProvider>
+            </QueryClientProvider>
+        </SafeAreaProvider>
     );
 }
