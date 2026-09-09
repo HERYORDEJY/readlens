@@ -19,6 +19,9 @@ npx tsc --noEmit          # type check
 ```
 
 Runs in Expo Go — no native build step, because the app uses no custom native modules.
+Verified on both an iOS simulator and an Android emulator: login and OTP, session
+persistence and refresh, list with search and pagination, report creation with an image
+attachment, and detail.
 
 ## Configuration
 
@@ -217,16 +220,10 @@ break silently — is fully covered above. Stated as a choice rather than left a
 
 ## Known limitations
 
-- **Create + upload has not been exercised against the live API from the app.** The two-step
-  flow, field ordering and partial-failure path are implemented and typecheck clean, and
-  `reportsApi` was verified directly against the API, but the end-to-end path through React
-  Native's `FormData` has not been run. This is the first thing to verify.
-- **Android is unverified.** All manual testing was on the iOS simulator; the Android
-  emulator's Expo Go could not be upgraded to SDK 57 in the time available. The Set-Cookie
-  parser handles both the folded and array header shapes, so it should be unaffected, but
-  this is untested rather than confirmed.
 - **Web is out of scope.** `expo-secure-store` has no web implementation, so the app would
   throw rather than degrade.
 - PDFs open in an external browser rather than rendering inline.
 - No offline banner. Requests fail with a clear, retryable message instead.
 - The polling cap means a file processed unusually slowly needs a manual pull-to-refresh.
+- The partial-upload-failure path is implemented and unit-reasoned but has not been observed
+  against a real S3 failure, since the upload succeeded on every manual run.
